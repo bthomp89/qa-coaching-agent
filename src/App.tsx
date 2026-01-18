@@ -1,10 +1,10 @@
 import { Routes, Route } from 'react-router-dom'
-import Review from './pages/Review'
+import Home from './pages/Home'
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Review />} />
+      <Route path="/" element={<Home />} />
     </Routes>
   )
 }
