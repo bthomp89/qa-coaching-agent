@@ -3,6 +3,7 @@ import Header from './Header'
 import TicketInputPanel from './TicketInputPanel'
 import OutputPanel from './OutputPanel'
 import type { QAResult } from '../types'
+import { postReview } from '../api/client'
 import SAMPLE_TICKET from '../data/sampleTicket.txt?raw'
 
 const STORAGE_KEY_TICKET = 'qa-coaching-agent:ticketText'
@@ -79,38 +80,15 @@ function PageContainer() {
       }
     }
 
-    // Simulate 1.5s delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    // Mock result with 5 criteria
-    const mockResult: QAResult = {
-      criteria: {
-        Empathy: {
-          score: 4,
-          notes: 'Good acknowledgment of customer urgency, but could show more understanding of the business impact (SOC 2 audit context).'
-        },
-        'Technical Accuracy': {
-          score: 3,
-          notes: 'Suggested troubleshooting steps were reasonable but repetitive. Failed to investigate the previous incident mentioned by customer.'
-        },
-        'Resolution Path': {
-          score: 3,
-          notes: 'Agent escalated appropriately only after customer insisted. Should have escalated earlier given the severity (Sev 1) and business impact.'
-        },
-        'Escalation Timing': {
-          score: 2,
-          notes: 'Escalation occurred too late in the conversation. A Sev 1 issue affecting critical audit processes should trigger immediate escalation.'
-        },
-        Documentation: {
-          score: 4,
-          notes: 'Requested relevant user data, but should have asked about the previous incident details earlier in the conversation.'
-        }
-      },
-      coaching_summary: 'The agent demonstrated basic troubleshooting skills and eventually escalated, but missed several key opportunities. The customer explicitly mentioned a prior similar incident (race condition in role evaluation engine), which should have been the first thing investigated rather than suggesting token regeneration. Given the SOC 2 audit context and Sev 1 classification, escalation should have happened immediately after the first response indicated an ongoing critical issue affecting compliance. The agent should proactively acknowledge the prior incident and check internal systems for known issues before asking the customer to retry steps they\'ve already completed.'
+    try {
+      const result = await postReview(inputFormat, ticketText)
+      setResult(result)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate QA review'
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
     }
-
-    setResult(mockResult)
-    setLoading(false)
   }
 
   return (
