@@ -1,20 +1,18 @@
 interface TicketInputPanelProps {
-  inputFormat: 'text' | 'json'
+  ticketSource: 'paste' | 'sample1'
   ticketText: string
-  onInputFormatChange: (format: 'text' | 'json') => void
+  onTicketSourceChange: (source: 'paste' | 'sample1') => void
   onTicketTextChange: (text: string) => void
-  onLoadSample: () => void
   onGenerateReview: () => void
   onClear: () => void
   disabled?: boolean
 }
 
 function TicketInputPanel({
-  inputFormat,
+  ticketSource,
   ticketText,
-  onInputFormatChange,
+  onTicketSourceChange,
   onTicketTextChange,
-  onLoadSample,
   onGenerateReview,
   onClear,
   disabled = false
@@ -24,17 +22,17 @@ function TicketInputPanel({
       <h2 className="text-lg font-semibold text-white mb-4">Ticket Input</h2>
       
       <div className="mb-4">
-        <label htmlFor="input-format" className="block text-sm font-medium text-gray-300 mb-2">
-          Input format
+        <label htmlFor="ticket-source" className="block text-sm font-medium text-gray-300 mb-2">
+          Ticket source
         </label>
         <select
-          id="input-format"
-          value={inputFormat}
-          onChange={(e) => onInputFormatChange(e.target.value as 'text' | 'json')}
+          id="ticket-source"
+          value={ticketSource}
+          onChange={(e) => onTicketSourceChange(e.target.value as 'paste' | 'sample1')}
           className="w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
         >
-          <option value="text">Paste ticket text</option>
-          <option value="json">Paste JSON</option>
+          <option value="paste">Paste ticket text</option>
+          <option value="sample1">Sample Ticket #1</option>
         </select>
       </div>
 
@@ -64,13 +62,6 @@ function TicketInputPanel({
           className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-700"
         >
           Generate QA Review
-        </button>
-        <button
-          type="button"
-          onClick={onLoadSample}
-          className="px-4 py-2 border border-gray-600 rounded-md text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors"
-        >
-          Load Sample Ticket
         </button>
         <button
           type="button"

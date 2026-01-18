@@ -75,23 +75,15 @@ export async function generateQAReview(ticketText: string): Promise<ReviewRespon
     throw new Error(`OpenAI API error: ${apiError?.message || 'Unknown error occurred'}`);
   }
 
-  // Log full response object for debugging
-  console.log('[OpenAI API] Full response object:', JSON.stringify(response, null, 2));
-
   const responseContent = response.output_text;
   if (!responseContent) {
     throw new Error('No response content from OpenAI Responses API');
   }
 
-  // Log raw response content for debugging
-  console.log('[OpenAI API] Raw response content:', responseContent);
-
   // Parse the structured JSON response
   let parsedResponse: QAResponseSchema;
   try {
     parsedResponse = JSON.parse(responseContent);
-    // Log parsed response for debugging
-    console.log('[OpenAI API] Parsed response:', JSON.stringify(parsedResponse, null, 2));
   } catch (error) {
     console.error('[OpenAI API] Failed to parse response:', error);
     throw new Error('Failed to parse response from OpenAI Responses API');
@@ -107,9 +99,6 @@ export async function generateQAReview(ticketText: string): Promise<ReviewRespon
     criteria: parsedResponse.criteria,
     coaching_summary: parsedResponse.coaching_summary
   };
-
-  // Log final result being returned
-  console.log('[OpenAI API] Final result being returned:', JSON.stringify(result, null, 2));
 
   return result;
 }

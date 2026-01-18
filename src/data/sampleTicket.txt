@@ -1,4 +1,3 @@
-Sample Zendesk Ticket 
 Customer: Jason Miller 
 Role: IT Manager, Larkspur Biotech 
 Priority: High 
