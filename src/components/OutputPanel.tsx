@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import type { QAResult } from '../types'
+import { RUBRICS, formatCriterionName } from '../constants/rubrics'
+import RubricModal from './RubricModal'
 
 interface OutputPanelProps {
   loading: boolean
@@ -6,7 +9,45 @@ interface OutputPanelProps {
   result: QAResult | null
 }
 
+// Helper function to format text with bullet points
+function formatBulletPoints(text: string): string[] {
+  if (!text) return []
+  
+  // Split by newlines first
+  const lines = text.split(/\n/).map(line => line.trim()).filter(line => line.length > 0)
+  
+  // Pattern to match bullet points at the start of a line: •, -, *, or numbered (1., 2., etc.)
+  const bulletPattern = /^[•\-\*]\s+|^\d+\.\s+/
+  
+  const result: string[] = []
+  
+  for (const line of lines) {
+    // Check if line starts with a bullet marker
+    if (bulletPattern.test(line)) {
+      // Extract the content after the bullet marker
+      const content = line.replace(bulletPattern, '').trim()
+      if (content) {
+        result.push(content)
+      }
+    } else if (line.includes('•') || line.includes('- ') || line.includes('* ')) {
+      // Line contains bullet markers but not at start, try to split by them
+      const parts = line.split(/[•\-\*]\s+/).filter(p => p.trim().length > 0)
+      result.push(...parts)
+    } else if (result.length === 0) {
+      // First line without bullets, treat as single item
+      result.push(line)
+    } else {
+      // Continue previous bullet point (append to last item)
+      result[result.length - 1] += ' ' + line
+    }
+  }
+  
+  return result.filter(item => item.trim().length > 0)
+}
+
 function OutputPanel({ loading, error, result }: OutputPanelProps) {
+  const [selectedCriterion, setSelectedCriterion] = useState<string | null>(null)
+  
   // Calculate overall score from criteria scores
   const calculateOverallScore = (criteria: QAResult['criteria']): number => {
     const scores = Object.values(criteria).map(c => c.score)
@@ -14,9 +55,20 @@ function OutputPanel({ loading, error, result }: OutputPanelProps) {
     return Math.round(average * 10) / 10 // Round to 1 decimal
   }
 
+  const handleOpenRubric = (criterion: string) => {
+    setSelectedCriterion(criterion)
+  }
+
+  const handleCloseRubric = () => {
+    setSelectedCriterion(null)
+  }
+
+  const selectedRubric = selectedCriterion ? RUBRICS[selectedCriterion] : null
+
   return (
-    <div className="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
-      <h2 className="text-lg font-semibold text-white mb-4">QA Scorecard</h2>
+    <>
+      <div className="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
+        <h2 className="text-lg font-semibold text-white mb-4">QA Scorecard</h2>
       
       {loading && (
         <div className="space-y-4">
@@ -48,15 +100,6 @@ function OutputPanel({ loading, error, result }: OutputPanelProps) {
             </table>
           </div>
           
-          {/* Skeleton for coaching summary */}
-          <div className="border border-gray-700 rounded-md p-4 bg-gray-800 animate-pulse">
-            <div className="h-5 bg-gray-700 rounded w-40 mb-3"></div>
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-700 rounded w-full"></div>
-              <div className="h-4 bg-gray-700 rounded w-full"></div>
-              <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-            </div>
-          </div>
         </div>
       )}
 
@@ -88,26 +131,45 @@ function OutputPanel({ loading, error, result }: OutputPanelProps) {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(result.criteria).map(([criterion, data]) => (
-                  <tr key={criterion} className="border-b border-gray-700">
-                    <td className="py-3 px-4 text-sm text-gray-200">{criterion}</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-700 text-gray-200">
-                        {data.score}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-400">{data.notes}</td>
-                  </tr>
-                ))}
+                {Object.entries(result.criteria).map(([criterion, data]) => {
+                  const bulletPoints = formatBulletPoints(data.notes)
+                  const formattedName = formatCriterionName(criterion)
+                  return (
+                    <tr key={criterion} className="border-b border-gray-700">
+                      <td className="py-3 px-4 text-sm text-gray-200">
+                        <div className="flex items-center gap-2">
+                          <span>{formattedName}</span>
+                          <button
+                            onClick={() => handleOpenRubric(criterion)}
+                            className="text-gray-400 hover:text-blue-400 transition-colors"
+                            aria-label={`View rubric for ${formattedName}`}
+                            title={`View rubric for ${formattedName}`}
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-700 text-gray-200">
+                          {data.score}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-400">
+                        <ul className="list-disc list-inside space-y-1">
+                          {bulletPoints.map((point, index) => (
+                            <li key={index}>{point.trim()}</li>
+                          ))}
+                        </ul>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
 
-          {/* Coaching Summary Card */}
-          <div className="border border-gray-700 rounded-md p-4 bg-gray-800">
-            <h3 className="text-md font-semibold text-white mb-2">Coaching Summary</h3>
-            <p className="text-sm text-gray-300 leading-relaxed">{result.coaching_summary}</p>
-          </div>
         </div>
       )}
 
@@ -118,7 +180,13 @@ function OutputPanel({ loading, error, result }: OutputPanelProps) {
           </p>
         </div>
       )}
-    </div>
+      </div>
+      <RubricModal
+        rubric={selectedRubric}
+        isOpen={!!selectedCriterion}
+        onClose={handleCloseRubric}
+      />
+    </>
   )
 }
 

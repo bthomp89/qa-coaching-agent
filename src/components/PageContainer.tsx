@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Header from './Header'
 import TicketInputPanel from './TicketInputPanel'
 import OutputPanel from './OutputPanel'
+import CoachingSummary from './CoachingSummary'
 import type { QAResult } from '../types'
 import { postReview } from '../api/client'
 import SAMPLE_TICKET from '../data/sampleTicket.txt?raw'
@@ -95,7 +96,7 @@ function PageContainer() {
     <div className="min-h-screen bg-gray-800">
       <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 mb-6">
           <TicketInputPanel
             inputFormat={inputFormat}
             ticketText={ticketText}
@@ -112,6 +113,12 @@ function PageContainer() {
             result={result}
           />
         </div>
+        {result && (
+          <CoachingSummary
+            summary={result.coaching_summary}
+            loading={loading}
+          />
+        )}
       </div>
     </div>
   )

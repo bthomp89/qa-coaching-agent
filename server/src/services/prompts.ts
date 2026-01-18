@@ -44,4 +44,6 @@ INSTRUCTIONS:
   * Use 2-4 bullet points per criterion
   * Each bullet point should be no longer than 2 sentences
   * Include: why the score was given (what was observed) and what could be done to improve (specific, actionable feedback)
-- Provide a coaching summary in bullet point format that is actionable and highlights key areas for improvement`;
+- Provide a coaching summary in bullet point format that is actionable and highlights key areas for improvement
+  * The summary must contain at least 5 bullet points and at most 8 bullet points
+  * Each bullet point should be concise and focused on actionable feedback`;
