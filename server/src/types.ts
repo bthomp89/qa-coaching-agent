@@ -1,0 +1,11 @@
+export type QAResult = {
+  criteria: Record<string, { score: number; notes: string }>;
+  coaching_summary: string;
+};
+
+export type ReviewRequest = {
+  inputFormat: 'text' | 'json';
+  ticketText: string;
+};
+
+export type ReviewResponse = QAResult;
