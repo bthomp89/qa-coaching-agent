@@ -1,0 +1,41 @@
+Sample Zendesk Ticket 
+Customer: Jason Miller 
+Role: IT Manager, Larkspur Biotech 
+Priority: High 
+Plan: Enterprise Plus 
+SLA: 4 hrs 
+Subject: Inconsistent Access to SecureVault — Okta Group Sync Partially Failing 
+Customer Message 
+Hi, 
+We have a critical access issue across our "DataOps" and "ComplianceAudit" Okta groups. Roughly half of the users in each group are getting a 403 "Access Denied" when trying to log into SecureVault. The rest can log in normally. 
+We checked Okta — group membership looks correct, and SCIM sync says "Success" from this morning. We didn't change any roles or entitlements. 
+We're mid-audit for SOC 2. I need this resolved fast — we cannot afford downtime with our internal audit team locked out. 
+Thanks, 
+Jason 
+Agent Response (Tier 1 Agent — Julia) 
+Hi Jason,
+Thanks for reaching out, and I'm sorry to hear about the access issues. Just to confirm — the affected users are all within the same two Okta groups? Have you had your Okta admin revalidate group assignments and SCIM settings? 
+Sometimes stale metadata causes SCIM to "succeed" but silently skip changes. Try manually syncing the group again and clearing your app cache. Let us know if the issue persists. 
+Best, 
+Julia 
+Customer Response 
+We already tried re-syncing groups and cleared app metadata. Still the same issue. Also, the problem is not consistent — one user logged in fine this morning and was blocked 20 minutes later. Another couldn't log in, then suddenly got access an hour later. 
+Our CISO is now involved and wants a timeline + explanation. Please escalate. 
+Agent Response (Tier 2 Engineer — Mike) 
+Hi Jason, 
+Thanks for the update and additional detail. That fluctuation does sound unusual. It's possible that your SCIM token is partially expired — we've seen issues where older SecureVault orgs had tokens that were not auto-rotated. 
+Please go to: 
+Admin → Integrations → SCIM → Regenerate your token and update it in Okta. Once that's done, run a full re-sync. This should realign all group memberships. Let me know how it goes. 
+Cheers, 
+Mike 
+Customer Response
+Mike — I already regenerated the SCIM token last week, and we re-synced this morning. Issue still happening. 
+Please dig deeper. This looks like something is intermittently breaking on your side — not Okta's. Users don't randomly gain and lose access. 
+Also, this happened to us six months ago — and your team said it was a race condition in your role evaluation engine. Is that back? 
+Agent Response 
+Thanks for the follow-up. I wasn't aware of the prior incident, but I'll review our internal logs for any recent regressions related to the role engine. 
+In the meantime, can you provide user emails for 3 affected and 3 unaffected users? That will help isolate the issue. I'll escalate to Engineering if I find anything in the logs. 
+Appreciate your patience. 
+Customer Final Message 
+Sent the user list. Please do not ask us to "retry sync" again unless you've confirmed a root cause. We're under scrutiny and cannot explain uncertainty to our auditors. 
+Also — please log this as a Sev 1 and give me a ticket ID I can reference in tomorrow's audit debrief.
