@@ -18,7 +18,12 @@ router.post('/', async (req: Request, res: Response) => {
     const result: ReviewResponse = await generateQAReview(body.ticketText);
     res.json(result);
   } catch (error) {
+    // Enhanced error logging for debugging
     console.error('Error generating QA review:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     
     // Handle specific error cases
     if (error instanceof Error) {
@@ -28,9 +33,24 @@ router.post('/', async (req: Request, res: Response) => {
         });
       }
       
+      if (error.message.includes('Ticket text exceeds maximum length')) {
+        return res.status(400).json({
+          error: error.message
+        });
+      }
+      
       if (error.message.includes('Unable to generate valid review response')) {
         return res.status(500).json({
           error: 'Unable to generate valid review response. Please try again.'
+        });
+      }
+
+      // For development: include error message for better debugging
+      // In production, you might want to hide this
+      if (process.env.NODE_ENV === 'development') {
+        return res.status(500).json({
+          error: 'An error occurred while generating the QA review. Please try again.',
+          details: error.message
         });
       }
     }
