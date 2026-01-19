@@ -21,7 +21,6 @@ services:
   - type: web
     name: qa-coaching-agent-frontend
     runtime: static
-    region: oregon
     plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: dist
