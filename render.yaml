@@ -18,8 +18,9 @@ services:
       # Note: PORT is automatically set by Render, no need to configure it
 
   # Frontend Static Site
-  - type: static
+  - type: web
     name: qa-coaching-agent-frontend
+    runtime: static
     region: oregon
     plan: free
     buildCommand: npm install && npm run build
