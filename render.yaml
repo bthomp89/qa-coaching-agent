@@ -1,0 +1,29 @@
+services:
+  # Backend API Service
+  - type: web
+    name: qa-coaching-agent-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    rootDir: server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: OPENAI_API_KEY
+        sync: false  # Set this manually in Render dashboard
+      - key: CLIENT_URL
+        sync: false  # Set this to your frontend URL after deployment
+      # Note: PORT is automatically set by Render, no need to configure it
+
+  # Frontend Static Site
+  - type: static
+    name: qa-coaching-agent-frontend
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false  # Set this to your backend URL after deployment
