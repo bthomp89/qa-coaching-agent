@@ -10,3 +10,14 @@ export type ReviewRequest = {
 };
 
 export type ReviewResponse = QAResult;
+
+export type ThemeAnalysisRequest = {
+  ticketText: string;
+};
+
+export type ThemeAnalysisResponse = {
+  coaching_themes: Array<{
+    theme: string;
+    reason: string;
+  }>;
+};

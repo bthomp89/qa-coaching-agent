@@ -1,4 +1,4 @@
-import type { QAResult, ReviewRequest } from '../types'
+import type { QAResult, ReviewRequest, ThemeAnalysisResult } from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
@@ -36,6 +36,50 @@ export async function postReview(
     }
 
     const result: QAResult = await response.json()
+    return result
+  } catch (error) {
+    // Handle network errors or other fetch errors
+    if (error instanceof Error) {
+      // If it's already an Error we threw, rethrow it
+      throw error
+    }
+    // If it's something else, wrap it
+    throw new Error('Network error: Unable to reach server')
+  }
+}
+
+export async function postThemeAnalysis(
+  ticketText: string
+): Promise<ThemeAnalysisResult> {
+  const url = `${API_BASE_URL}/api/theme-analysis`
+  const body = {
+    ticketText
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+
+    if (!response.ok) {
+      // Try to parse error message from server
+      let errorMessage = 'Failed to generate theme analysis'
+      try {
+        const errorData = await response.json()
+        if (errorData.error && typeof errorData.error === 'string') {
+          errorMessage = errorData.error
+        }
+      } catch (e) {
+        // If JSON parsing fails, use fallback message
+      }
+      throw new Error(errorMessage)
+    }
+
+    const result: ThemeAnalysisResult = await response.json()
     return result
   } catch (error) {
     // Handle network errors or other fetch errors

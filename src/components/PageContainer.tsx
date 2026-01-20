@@ -4,12 +4,15 @@ import TicketInputPanel from './TicketInputPanel'
 import OutputPanel from './OutputPanel'
 import InteractionSummary from './InteractionSummary'
 import CoachingSummary from './CoachingSummary'
-import type { QAResult } from '../types'
-import { postReview } from '../api/client'
+import ThemeAnalysis from './ThemeAnalysis'
+import ThemeAnalysisWarningModal from './ThemeAnalysisWarningModal'
+import type { QAResult, ThemeAnalysisResult } from '../types'
+import { postReview, postThemeAnalysis } from '../api/client'
 import SAMPLE_TICKET from '../data/sampleTicket.txt?raw'
 
 const STORAGE_KEY_TICKET = 'qa-coaching-agent:ticketText'
 const STORAGE_KEY_RESULT = 'qa-coaching-agent:result'
+const STORAGE_KEY_THEME_ANALYSIS = 'qa-coaching-agent:themeAnalysis'
 
 function PageContainer() {
   const [ticketSource, setTicketSource] = useState<'paste' | 'sample1'>('paste')
@@ -17,6 +20,10 @@ function PageContainer() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<QAResult | null>(null)
+  const [themeAnalysisLoading, setThemeAnalysisLoading] = useState(false)
+  const [themeAnalysisError, setThemeAnalysisError] = useState<string | null>(null)
+  const [themeAnalysisResult, setThemeAnalysisResult] = useState<ThemeAnalysisResult | null>(null)
+  const [showWarningModal, setShowWarningModal] = useState(false)
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -33,6 +40,17 @@ function PageContainer() {
       } catch (e) {
         // Invalid stored data, ignore
         localStorage.removeItem(STORAGE_KEY_RESULT)
+      }
+    }
+
+    const savedThemeAnalysis = localStorage.getItem(STORAGE_KEY_THEME_ANALYSIS)
+    if (savedThemeAnalysis) {
+      try {
+        const parsedThemeAnalysis = JSON.parse(savedThemeAnalysis) as ThemeAnalysisResult
+        setThemeAnalysisResult(parsedThemeAnalysis)
+      } catch (e) {
+        // Invalid stored data, ignore
+        localStorage.removeItem(STORAGE_KEY_THEME_ANALYSIS)
       }
     }
   }, [])
@@ -54,6 +72,14 @@ function PageContainer() {
     }
   }, [result])
 
+  useEffect(() => {
+    if (themeAnalysisResult) {
+      localStorage.setItem(STORAGE_KEY_THEME_ANALYSIS, JSON.stringify(themeAnalysisResult))
+    } else {
+      localStorage.removeItem(STORAGE_KEY_THEME_ANALYSIS)
+    }
+  }, [themeAnalysisResult])
+
   // Format sample ticket with double spacing between lines
   const formatSampleTicket = (text: string): string => {
     return text.split('\n').join('\n\n')
@@ -71,8 +97,32 @@ function PageContainer() {
     setTicketText('')
     setResult(null)
     setError(null)
+    setThemeAnalysisResult(null)
+    setThemeAnalysisError(null)
     localStorage.removeItem(STORAGE_KEY_TICKET)
     localStorage.removeItem(STORAGE_KEY_RESULT)
+    localStorage.removeItem(STORAGE_KEY_THEME_ANALYSIS)
+  }
+
+  const handleThemeAnalysis = async () => {
+    // Check if QA review exists
+    if (!result) {
+      setShowWarningModal(true)
+      return
+    }
+
+    setThemeAnalysisLoading(true)
+    setThemeAnalysisError(null)
+
+    try {
+      const themeResult = await postThemeAnalysis(ticketText)
+      setThemeAnalysisResult(themeResult)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate theme analysis'
+      setThemeAnalysisError(errorMessage)
+    } finally {
+      setThemeAnalysisLoading(false)
+    }
   }
 
   const handleGenerateReview = async () => {
@@ -105,11 +155,20 @@ function PageContainer() {
             onGenerateReview={handleGenerateReview}
             onClear={handleClear}
             disabled={ticketText.trim().length === 0 || ticketText.trim().length < 50 || loading}
+            onThemeAnalysis={handleThemeAnalysis}
+            themeAnalysisEnabled={!!result && !loading}
+            themeAnalysisLoading={themeAnalysisLoading}
           />
           {result && (
             <InteractionSummary
               summary={result.interaction_summary}
               loading={loading}
+            />
+          )}
+          {themeAnalysisResult && (
+            <ThemeAnalysis
+              result={themeAnalysisResult}
+              loading={themeAnalysisLoading}
             />
           )}
           <OutputPanel
@@ -124,7 +183,17 @@ function PageContainer() {
             loading={loading}
           />
         )}
+        {themeAnalysisError && (
+          <div className="bg-gray-900 rounded-lg shadow-sm border border-red-600 p-6">
+            <p className="text-red-400 font-medium mb-2">Theme Analysis Error</p>
+            <p className="text-red-300 text-sm">{themeAnalysisError}</p>
+          </div>
+        )}
       </div>
+      <ThemeAnalysisWarningModal
+        isOpen={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+      />
     </div>
   )
 }

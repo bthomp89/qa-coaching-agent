@@ -8,3 +8,10 @@ export type ReviewRequest = {
   inputFormat: 'text' | 'json';
   ticketText: string;
 };
+
+export type ThemeAnalysisResult = {
+  coaching_themes: Array<{
+    theme: string;
+    reason: string;
+  }>;
+};

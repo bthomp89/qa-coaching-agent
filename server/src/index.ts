@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import reviewRouter from './routes/review';
+import themeAnalysisRouter from './routes/theme-analysis';
 
 // Load environment variables from server/.env
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -42,6 +43,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/review', reviewRouter);
+app.use('/api/theme-analysis', themeAnalysisRouter);
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {

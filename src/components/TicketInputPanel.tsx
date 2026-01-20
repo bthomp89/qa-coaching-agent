@@ -6,6 +6,9 @@ interface TicketInputPanelProps {
   onGenerateReview: () => void
   onClear: () => void
   disabled?: boolean
+  onThemeAnalysis?: () => void
+  themeAnalysisEnabled?: boolean
+  themeAnalysisLoading?: boolean
 }
 
 function TicketInputPanel({
@@ -15,7 +18,10 @@ function TicketInputPanel({
   onTicketTextChange,
   onGenerateReview,
   onClear,
-  disabled = false
+  disabled = false,
+  onThemeAnalysis,
+  themeAnalysisEnabled = false,
+  themeAnalysisLoading = false
 }: TicketInputPanelProps) {
   return (
     <div className="bg-gray-900 rounded-lg shadow-sm border border-gray-700 p-6">
@@ -63,6 +69,16 @@ function TicketInputPanel({
         >
           Generate QA Review
         </button>
+        {onThemeAnalysis && (
+          <button
+            type="button"
+            onClick={onThemeAnalysis}
+            disabled={!themeAnalysisEnabled || themeAnalysisLoading}
+            className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-colors disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-700"
+          >
+            {themeAnalysisLoading ? 'Analyzing...' : 'Theme Analysis'}
+          </button>
+        )}
         <button
           type="button"
           onClick={onClear}

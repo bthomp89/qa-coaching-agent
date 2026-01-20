@@ -62,3 +62,29 @@ export const QA_REVIEW_JSON_SCHEMA = {
   required: ["criteria", "coaching_summary"],
   additionalProperties: false
 } as const;
+
+/**
+ * JSON Schema for theme analysis response from OpenAI Responses API
+ * Defines the expected structure for theme analysis responses
+ */
+export const THEME_ANALYSIS_JSON_SCHEMA = {
+  type: "object",
+  properties: {
+    coaching_themes: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          theme: { type: "string" },
+          reason: { type: "string" }
+        },
+        required: ["theme", "reason"],
+        additionalProperties: false
+      },
+      minItems: 0,
+      maxItems: 3
+    }
+  },
+  required: ["coaching_themes"],
+  additionalProperties: false
+} as const;
