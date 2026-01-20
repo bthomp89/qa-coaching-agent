@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Header from './Header'
 import TicketInputPanel from './TicketInputPanel'
 import OutputPanel from './OutputPanel'
+import InteractionSummary from './InteractionSummary'
 import CoachingSummary from './CoachingSummary'
 import type { QAResult } from '../types'
 import { postReview } from '../api/client'
@@ -105,6 +106,12 @@ function PageContainer() {
             onClear={handleClear}
             disabled={ticketText.trim().length === 0 || ticketText.trim().length < 50 || loading}
           />
+          {result && (
+            <InteractionSummary
+              summary={result.interaction_summary}
+              loading={loading}
+            />
+          )}
           <OutputPanel
             loading={loading}
             error={error}

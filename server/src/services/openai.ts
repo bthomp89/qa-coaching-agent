@@ -4,6 +4,7 @@ import path from 'path';
 import type { ReviewResponse } from '../types';
 import { SYSTEM_MESSAGE } from './prompts';
 import { QA_REVIEW_JSON_SCHEMA } from './schema';
+import { generateInteractionSummary } from './summary';
 
 // Load environment variables before creating the OpenAI client
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -94,10 +95,25 @@ export async function generateQAReview(ticketText: string): Promise<ReviewRespon
     throw new Error('Invalid response structure from OpenAI Responses API');
   }
 
-  // Transform to ReviewResponse format (already matches the schema)
+  // Generate interaction summary separately (allows independent error handling)
+  let interactionSummary = '';
+  try {
+    interactionSummary = await generateInteractionSummary(ticketText);
+  } catch (error) {
+    console.error('[OpenAI API] Failed to generate interaction summary:', error);
+    // Continue even if summary generation fails - the review can still be returned
+    if (error instanceof Error) {
+      console.error('[OpenAI API] Summary error message:', error.message);
+    }
+    // Set default message if summary generation fails
+    interactionSummary = 'Unable to generate interaction summary.';
+  }
+
+  // Transform to ReviewResponse format
   const result = {
     criteria: parsedResponse.criteria,
-    coaching_summary: parsedResponse.coaching_summary
+    coaching_summary: parsedResponse.coaching_summary,
+    interaction_summary: interactionSummary
   };
 
   return result;
